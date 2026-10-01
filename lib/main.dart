@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 
 import 'home_page.dart';
 
+// start the app.
 void main() {
   runApp(const MainApp());
 }
 
+// hold app settings.
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  const MainApp({super.key, this.soundPlayer});
+
+  final XmbSoundPlayer? soundPlayer;
 
   @override
+  // show the main screen.
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'All Laboratory Activities',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      ),
-      home: const HomePage(),
+      home: HomePage(soundPlayer: soundPlayer),
     );
   }
 }

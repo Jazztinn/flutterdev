@@ -1,25 +1,14 @@
 import 'package:flutter/material.dart';
 
-class SelfActivityOnePage extends StatelessWidget {
-  const SelfActivityOnePage({super.key, required this.title});
+import 'activity_placeholder.dart';
 
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const Center(
-        child: Text(
-          'This self activity is still under development. Please wait...',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Century Gothic',
-          ),
-        ),
-      ),
-    );
-  }
+// show the self activity page.
+class SelfActivityOnePage extends ActivityPlaceholderPage {
+  const SelfActivityOnePage({super.key, required super.title})
+    : super(
+        message:
+            'This self activity is still under development. Please wait...',
+        fontFamily: 'Century Gothic',
+        textAlign: TextAlign.center,
+      );
 }
