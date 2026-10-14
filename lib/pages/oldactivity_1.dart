@@ -1,4 +1,3 @@
-import 'activity_placeholder.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
@@ -9,7 +8,7 @@ class ActivityOnePage extends StatefulWidget {
   const ActivityOnePage({super.key, required this.title});
 
   @override
-  _MusicPlayerState createState() => _MusicPlayerState();
+  State<ActivityOnePage> createState() => _MusicPlayerState();
 }
 
 class _MusicPlayerState extends State<ActivityOnePage> {
@@ -44,7 +43,7 @@ class _MusicPlayerState extends State<ActivityOnePage> {
       setState(() {
         _isPlaying = true;
       });
-    }  
+    }
   }
 
   //next music
@@ -59,36 +58,37 @@ class _MusicPlayerState extends State<ActivityOnePage> {
     await _playSong(previousIndex);
   }
 
-  //compost 
+  //compost
   @override
   void dispose() {
     _player.dispose();
     super.dispose();
   }
-  
-  @override 
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          IconButton (
+          IconButton(
             icon: Icon(Icons.search),
-            onPressed: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SongListScreen(
-                  songs: songs,
-                  onSongSelected: (index) {
-                    _playSong(index);
-                    Navigator.pop(context);
-                  },
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SongListScreen(
+                    songs: songs,
+                    onSongSelected: (index) {
+                      _playSong(index);
+                      Navigator.pop(context);
+                    },
+                  ),
                 ),
-              ),
-            );
-          }), //IconButton
-        ], 
+              );
+            },
+          ), //IconButton
+        ],
       ), //AppBar
       body: Center(
         child: Column(
@@ -96,10 +96,7 @@ class _MusicPlayerState extends State<ActivityOnePage> {
           children: [
             Text(
               songs[_currentIndex],
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ), // display current song name
             const SizedBox(height: 20),
             Row(
@@ -109,7 +106,7 @@ class _MusicPlayerState extends State<ActivityOnePage> {
                   icon: Icon(Icons.play_arrow_rounded),
                   onPressed: _togglePlayPause,
                   iconSize: 40,
-                ), 
+                ),
                 IconButton(
                   icon: Icon(Icons.skip_next),
                   onPressed: _nextSong,
@@ -120,31 +117,29 @@ class _MusicPlayerState extends State<ActivityOnePage> {
                   onPressed: _previousSong,
                   iconSize: 40,
                 ),
-              ]
+              ],
             ), // Row
-          ]
+          ],
         ),
       ), // Center
     ); // Scaffold
   }
 }
 
-
 class SongListScreen extends StatelessWidget {
   final List<String> songs;
   final Function(int) onSongSelected;
 
   const SongListScreen({
-    super.key, 
-    required this.songs, 
-    required this.onSongSelected
+    super.key,
+    required this.songs,
+    required this.onSongSelected,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Select a Song')),
+      appBar: AppBar(title: Text('Select a Song')),
       body: ListView.builder(
         itemCount: songs.length,
         itemBuilder: (context, index) {
@@ -157,4 +152,3 @@ class SongListScreen extends StatelessWidget {
     );
   }
 }
-

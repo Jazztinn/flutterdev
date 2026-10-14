@@ -116,7 +116,7 @@ class _WavePainter extends CustomPainter {
   bool shouldRepaint(_WavePainter oldDelegate) => oldDelegate.time != time;
 }
 
-enum XmbIconKind { info, camera, game, settings, battery }
+enum XmbIconKind { info, camera, game, settings, battery, music, weather }
 
 // draw one menu icon.
 class XmbIcon extends StatelessWidget {
@@ -220,6 +220,43 @@ class _IconPainter extends CustomPainter {
         for (var i = 0; i < 3; i++) {
           path.addRect(Rect.fromLTWH(27 + i * 20, 36, 11, 26));
         }
+      case XmbIconKind.music:
+        final notes = Path()
+          ..addOval(const Rect.fromLTWH(16, 62, 25, 18))
+          ..addOval(const Rect.fromLTWH(57, 53, 25, 18));
+        final stems = Path()
+          ..addRect(const Rect.fromLTWH(34, 25, 7, 46))
+          ..addRect(const Rect.fromLTWH(75, 15, 7, 47))
+          ..moveTo(34, 24)
+          ..lineTo(82, 12)
+          ..lineTo(82, 24)
+          ..lineTo(34, 36)
+          ..close();
+        return Path.combine(PathOperation.union, notes, stems);
+      case XmbIconKind.weather:
+        path.fillType = PathFillType.nonZero;
+        path.moveTo(22, 84);
+        path.cubicTo(7, 84, 4, 65, 18, 59);
+        path.cubicTo(14, 43, 32, 32, 45, 42);
+        path.cubicTo(57, 31, 77, 41, 77, 57);
+        path.cubicTo(96, 54, 101, 79, 84, 84);
+        path.close();
+        const center = Offset(69, 27);
+        final sun = Path()
+          ..addOval(Rect.fromCircle(center: center, radius: 13));
+        for (var i = 0; i < 8; i++) {
+          final angle = i * math.pi / 4;
+          final direction = Offset(math.cos(angle), math.sin(angle));
+          final normal = Offset(-direction.dy, direction.dx) * 1.7;
+          final start = center + direction * 18;
+          final end = center + direction * 25;
+          sun.moveTo((start - normal).dx, (start - normal).dy);
+          sun.lineTo((end - normal).dx, (end - normal).dy);
+          sun.lineTo((end + normal).dx, (end + normal).dy);
+          sun.lineTo((start + normal).dx, (start + normal).dy);
+          sun.close();
+        }
+        return Path.combine(PathOperation.union, sun, path);
     }
     return path;
   }

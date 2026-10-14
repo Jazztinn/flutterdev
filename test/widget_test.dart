@@ -1,5 +1,7 @@
 import 'package:activity_hub/home_page.dart';
 import 'package:activity_hub/main.dart';
+import 'package:activity_hub/pages/activity_1.dart';
+import 'package:activity_hub/pages/activity_2.dart';
 import 'package:activity_hub/xmb_menu.dart';
 import 'package:activity_hub/xmb_visuals.dart';
 import 'package:flutter/material.dart';
@@ -15,39 +17,39 @@ void main() {
     await tester.pumpWidget(MainApp(soundPlayer: (_) {}));
 
     expect(find.byType(HomePage), findsOneWidget);
-    for (var index = 1; index <= 4; index++) {
-      expect(find.text('Activity $index'), findsOneWidget);
+    for (final title in const [
+      'JJTunes',
+      'SkyZine',
+      'Activity 3',
+      'Activity 4',
+    ]) {
+      expect(find.text(title), findsOneWidget);
     }
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('every activity item opens its matching page', (tester) async {
+  testWidgets('activity 1 and 2 open their current pages', (tester) async {
     final sounds = <XmbSound>[];
 
-    for (var index = 0; index < 4; index++) {
-      await tester.pumpWidget(_testApp(sounds));
-      await tester.pump();
-      await tester.tap(find.byKey(ValueKey('activity-$index')));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpWidget(_testApp(sounds));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('activity-0')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(ActivityOnePage), findsOneWidget);
 
-      expect(
-        find.descendant(
-          of: find.byType(AppBar),
-          matching: find.text('Activity ${index + 1}'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.text('This page is still under development. Please wait...'),
-        findsOneWidget,
-      );
-      expect(find.byKey(const ValueKey('construction-worker')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.pumpWidget(_testApp(sounds));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('activity-1')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(ActivityTwoPage), findsOneWidget);
+    expect(find.byKey(const ValueKey('weather-city-field')), findsOneWidget);
 
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-    }
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('info media and settings open placeholder pages', (tester) async {

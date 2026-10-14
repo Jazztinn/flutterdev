@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage>
   static const _responseTime = 0.045;
   static const _activityPages = [
     ActivityOnePage(title: 'JJTunes'),
-    ActivityTwoPage(title: 'Activity 2'),
+    ActivityTwoPage(title: 'SkyZine'),
     ActivityThreePage(title: 'Activity 3'),
     ActivityFourPage(title: 'Activity 4'),
   ];

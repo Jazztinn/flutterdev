@@ -24,7 +24,7 @@ class XmbMenu extends StatefulWidget {
   // names shown in the activity list.
   static const activityNames = [
     'JJTunes',
-    'Activity 2',
+    'SkyZine',
     'Activity 3',
     'Activity 4',
   ];
@@ -198,25 +198,39 @@ class _XmbMenuState extends State<XmbMenu> {
                                           ),
                                       ],
                                     ),
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        // show hazard texture behind frame.
-                                        Image.asset(
-                                          'assets/images/hazard-stripes.png',
-                                          width: (44 + 12 * focus) * scale,
-                                          height: (44 + 12 * focus) * scale,
-                                          fit: BoxFit.cover,
-                                          filterQuality: FilterQuality.high,
-                                        ),
-                                        Image.asset(
-                                          'assets/images/activity-icon.png',
-                                          width: (44 + 12 * focus) * scale,
-                                          height: (44 + 12 * focus) * scale,
-                                          filterQuality: FilterQuality.high,
-                                        ),
-                                      ],
-                                    ),
+                                    child: index < 2
+                                        ? XmbIcon(
+                                            kind: index == 0
+                                                ? XmbIconKind.music
+                                                : XmbIconKind.weather,
+                                            size: (44 + 12 * focus) * scale,
+                                            selected: focus > 0.5,
+                                          )
+                                        : Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              // show hazard texture behind frame.
+                                              Image.asset(
+                                                'assets/images/hazard-stripes.png',
+                                                width:
+                                                    (44 + 12 * focus) * scale,
+                                                height:
+                                                    (44 + 12 * focus) * scale,
+                                                fit: BoxFit.cover,
+                                                filterQuality:
+                                                    FilterQuality.high,
+                                              ),
+                                              Image.asset(
+                                                'assets/images/activity-icon.png',
+                                                width:
+                                                    (44 + 12 * focus) * scale,
+                                                height:
+                                                    (44 + 12 * focus) * scale,
+                                                filterQuality:
+                                                    FilterQuality.high,
+                                              ),
+                                            ],
+                                          ),
                                   ),
                                 ),
                               ),

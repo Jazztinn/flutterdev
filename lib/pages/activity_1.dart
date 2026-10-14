@@ -22,7 +22,7 @@ class ActivityOnePage extends StatefulWidget {
   const ActivityOnePage({super.key, required this.title});
 
   @override
-  _MusicPlayerState createState() => _MusicPlayerState();
+  State<ActivityOnePage> createState() => _MusicPlayerState();
 }
 
 class _MusicPlayerState extends State<ActivityOnePage>
