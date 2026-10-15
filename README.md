@@ -11,6 +11,11 @@ flutter pub get
 flutter run
 ```
 
+## Open SkyZine on any computer
+
+The web app is published at https://jazztinn.github.io/flutterdev/ by GitHub Pages.
+The GitHub Actions workflow rebuilds and deploys it whenever changes are pushed to `main`.
+
 SkyZine (Activity 2) uses the configured OpenWeather key for current conditions and the
 5-day / 3-hour forecast. It shows five upcoming days, rain chance, rain amount,
 humidity, wind, feels-like temperature, and local sunrise/sunset times.
