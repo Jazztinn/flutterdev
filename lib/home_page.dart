@@ -28,7 +28,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  // keep menu setup in one place.
+  // keep menu setup in one place
   static const _activityCategory = 2;
   static const _responseTime = 0.045;
   static const _activityPages = [
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage>
   bool _openingActivity = false;
   bool _openingPlaceholder = false;
 
-  // send sound to the test player or real player.
+  // send sound to the test player or real player
   void _sound(XmbSound sound) {
     final player = widget.soundPlayer;
     if (player != null) {
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  // start menu motion, clock, and sound.
+  // start menu motion, clock, and sound
   void initState() {
     super.initState();
     _ticker = createTicker(_tick)..start();
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage>
       return;
     }
 
-    // move menu toward its new position.
+    // move menu toward its new position
     final dt = ((elapsed - _lastTick).inMicroseconds / 1000000)
         .clamp(0.0, 0.05)
         .toDouble();
@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _scheduleClock() {
-    // update the clock on each new minute.
+    // update the clock on each new minute
     final milliseconds = (60 - _now.second) * 1000 - _now.millisecond;
     _clockTimer = Timer(Duration(milliseconds: milliseconds), () {
       if (!mounted) return;
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _selectCategory(int index) {
-    // choose a category inside the menu limits.
+    // choose a category inside the menu limits
     final next = index.clamp(0, XmbMenu.categories.length - 1).toInt();
     if (next == _selectedCategory) return;
     setState(() => _selectedCategory = next);
@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _selectActivity(int index) {
-    // choose an activity inside the menu limits.
+    // choose an activity inside the menu limits
     final next = index.clamp(0, XmbMenu.activityNames.length - 1).toInt();
     if (next == _selectedActivity) return;
     setState(() => _selectedActivity = next);
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _moveActivity(int direction) {
-    // move up or down when activities are open.
+    // move up or down when activities are open
     if (_selectedCategory == _activityCategory) {
       _selectActivity(_selectedActivity + direction);
     }
@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<void> _openPlaceholder(Widget page) async {
-    // open a category placeholder page.
+    // open a category placeholder page
     if (_openingPlaceholder) return;
     _openingPlaceholder = true;
     _stopRepeat();
@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _openSelectedItem() {
-    // open the focused menu page.
+    // open the focused menu page
     if (_selectedCategory == _activityCategory) {
       unawaited(_openActivity(_selectedActivity));
       return;
@@ -198,7 +198,7 @@ class _HomePageState extends State<HomePage>
   }
 
   KeyEventResult _handleKey(FocusNode _, KeyEvent event) {
-    // handle arrows, enter, and held keys.
+    // handle arrows, enter, and held keys
     final key = event.logicalKey;
     final directional =
         key == LogicalKeyboardKey.arrowLeft ||
@@ -234,7 +234,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _activateKey(LogicalKeyboardKey key) {
-    // apply one key move.
+    // apply one key move
     if (key == LogicalKeyboardKey.arrowLeft) _moveCategory(-1);
     if (key == LogicalKeyboardKey.arrowRight) _moveCategory(1);
     if (key == LogicalKeyboardKey.arrowUp) _moveActivity(-1);
@@ -242,7 +242,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _scheduleRepeat(LogicalKeyboardKey key) {
-    // repeat held keys faster over time.
+    // repeat held keys faster over time
     _repeatTimer = Timer(Duration(milliseconds: _repeatInterval), () {
       if (_heldKey != key) return;
       _activateKey(key);
@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void _stopRepeat() {
-    // stop key repeat when key is released.
+    // stop key repeat when key is released
     _repeatTimer?.cancel();
     _repeatTimer = null;
     _heldKey = null;
@@ -267,7 +267,7 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  // place wallpaper behind the menu.
+  // place wallpaper behind the menu
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
@@ -300,7 +300,7 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  // stop timers and release players.
+  // stop timers and release players
   void dispose() {
     _stopRepeat();
     _clockTimer?.cancel();
