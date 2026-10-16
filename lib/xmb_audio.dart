@@ -7,7 +7,7 @@ enum XmbSound { opening, navigation, confirm, startGame, back }
 
 typedef XmbSoundPlayer = void Function(XmbSound sound);
 
-/// load sound players before they are needed.
+/// load sound players before they are needed
 class XmbAudio {
   static const _navigationVoiceCount = 8;
 
@@ -26,7 +26,7 @@ class XmbAudio {
   bool _disposed = false;
 
   void initialize() {
-    // prepare every sound in the background.
+    // prepare every sound in the background
     for (final entry in assets.entries) {
       final count = entry.key == XmbSound.navigation
           ? _navigationVoiceCount
@@ -36,7 +36,7 @@ class XmbAudio {
   }
 
   Future<void> _prepare(XmbSound sound, String asset, int count) async {
-    // create one or more players for this sound.
+    // create one or more players for this sound
     try {
       final players = <AudioPlayer>[];
       for (var index = 0; index < count; index++) {
@@ -49,7 +49,7 @@ class XmbAudio {
       }
       _players[sound] = players;
       _ready.add(sound);
-      // play opening sound on native platforms.
+      // play opening sound on native platforms
       if (sound == XmbSound.opening && !kIsWeb) play(sound);
     } catch (error) {
       debugPrint('PSP audio preload: $error');
@@ -57,7 +57,7 @@ class XmbAudio {
   }
 
   void play(XmbSound sound) {
-    // play one sound without blocking the menu.
+    // play one sound without blocking the menu
     if (_disposed) return;
     if (sound == XmbSound.back) {
       unawaited(_stop(XmbSound.confirm));
@@ -65,7 +65,7 @@ class XmbAudio {
     }
     if (!_ready.contains(sound)) return;
     if (sound == XmbSound.navigation) {
-      // use another voice so fast moves can overlap.
+      // use another voice so fast moves can overlap
       final players = _players[sound]!;
       final player = players[_navigationVoice];
       _navigationVoice = (_navigationVoice + 1) % players.length;
