@@ -28,6 +28,7 @@ class ActivityOnePage extends StatefulWidget {
 class _MusicPlayerState extends State<ActivityOnePage>
     with SingleTickerProviderStateMixin {
   final AudioPlayer _player = AudioPlayer();
+  final math.Random _random = math.Random();
   final _backgroundTime = ValueNotifier<double>(0);
   late final Ticker _backgroundTicker;
   Duration _lastFrame = Duration.zero;
@@ -100,15 +101,22 @@ class _MusicPlayerState extends State<ActivityOnePage>
   bool _isPlaying = false;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
+  Duration? _seekPreview;
   double _volume = 1;
   bool _shuffle = false;
+  List<int> _shuffleOrder = [];
+  int _shufflePosition = 0;
   final Set<int> _favoriteTracks = <int>{};
   int _repeatMode = 0;
   int? _hoveredTrack;
   int? _dockFocusTrack;
   bool _dockFocusQueued = false;
-  final ScrollController _dockHorizontalController = ScrollController();
-  final ScrollController _dockVerticalController = ScrollController();
+  final ScrollController _dockHorizontalController = ScrollController(
+    initialScrollOffset: 120000,
+  );
+  final ScrollController _dockVerticalController = ScrollController(
+    initialScrollOffset: 136000,
+  );
   Map<String, dynamic> _waveforms = {};
 
   @override
@@ -165,13 +173,25 @@ class _MusicPlayerState extends State<ActivityOnePage>
   }
 
   //play selected music
-  Future<void> _playSong(int index) async {
+  void _resetShuffleOrder(int currentIndex) {
+    final remaining = List<int>.generate(
+      songs.length,
+      (index) => index,
+    )..remove(currentIndex);
+    remaining.shuffle(_random);
+    _shuffleOrder = [currentIndex, ...remaining];
+    _shufflePosition = 0;
+  }
+
+  Future<void> _playSong(int index, {bool resetShuffleOrder = true}) async {
     await _player.stop();
     if (!mounted) return;
+    if (_shuffle && resetShuffleOrder) _resetShuffleOrder(index);
     setState(() {
       _currentIndex = index;
       _dockFocusTrack = index;
       _position = Duration.zero;
+      _seekPreview = null;
       _duration = Duration(
         milliseconds: _waveforms[songs[index]]?['durationMs'] ?? 0,
       );
@@ -204,23 +224,43 @@ class _MusicPlayerState extends State<ActivityOnePage>
 
   //next music
   Future<void> _nextSong() async {
+    if (_shuffle) {
+      if (_shuffleOrder.isEmpty) _resetShuffleOrder(_currentIndex);
+      _shufflePosition = (_shufflePosition + 1) % _shuffleOrder.length;
+      await _playSong(
+        _shuffleOrder[_shufflePosition],
+        resetShuffleOrder: false,
+      );
+      return;
+    }
     int nextIndex = (_currentIndex + 1) % songs.length;
     await _playSong(nextIndex);
   }
 
   //previous music
   Future<void> _previousSong() async {
+    if (_shuffle) {
+      if (_shuffleOrder.isEmpty) _resetShuffleOrder(_currentIndex);
+      _shufflePosition =
+          (_shufflePosition - 1 + _shuffleOrder.length) % _shuffleOrder.length;
+      await _playSong(
+        _shuffleOrder[_shufflePosition],
+        resetShuffleOrder: false,
+      );
+      return;
+    }
     int previousIndex = (_currentIndex - 1 + songs.length) % songs.length;
     await _playSong(previousIndex);
   }
 
   // seek before or during play.
   Future<void> _seek(double value) async {
-    final target = _duration * value;
+    final target = _duration * value.clamp(0.0, 1.0);
     if (_player.source == null) {
       await _player.setSource(AssetSource(songs[_currentIndex]));
     }
     await _player.seek(target);
+    if (mounted) setState(() => _seekPreview = null);
   }
 
   //compost
@@ -290,13 +330,10 @@ class _MusicPlayerState extends State<ActivityOnePage>
     if (tracks.isEmpty) return;
     final position = controller.position;
     final itemStep = bottom ? 120.0 : 136.0;
-    final firstCenter = bottom ? 68.0 : 76.0;
+    final firstCenter = bottom ? 60.0 : 68.0;
     final center = position.pixels + position.viewportDimension / 2;
-    final slot = ((center - firstCenter) / itemStep).round().clamp(
-      0,
-      tracks.length - 1,
-    );
-    final next = tracks[slot];
+    final slot = ((center - firstCenter) / itemStep).round();
+    final next = tracks[slot % tracks.length];
     if (_dockFocusTrack == next) return;
     setState(() => _dockFocusTrack = next);
   }
@@ -539,47 +576,46 @@ class _MusicPlayerState extends State<ActivityOnePage>
     final dockTracks = _orderedDockTracks();
 
     return SizedBox(
-      width: bottom ? dockTracks.length * 120.0 + 16 : 120,
-      height: bottom ? 144 : null,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: bottom ? 8 : 0, vertical: 8),
-        child: Flex(
-          direction: bottom ? Axis.horizontal : Axis.vertical,
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (final trackIndex in dockTracks)
-              MouseRegion(
-                onEnter: (event) {
-                  _dockTarget = event.localPosition;
-                  if (_hoveredTrack != trackIndex) {
-                    setState(() => _hoveredTrack = trackIndex);
-                  }
-                },
-                onHover: (event) {
-                  _dockTarget = event.localPosition;
-                },
-                onExit: (_) {
-                  _dockTarget = const Offset(52, 56);
-                  if (_hoveredTrack == trackIndex) {
-                    setState(() => _hoveredTrack = null);
-                  }
-                },
-                child: SizedBox(
-                  height: 136,
-                  width: 120,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _dockCard(trackIndex),
-                      const SizedBox(height: 5),
-                      _dockLabel(trackIndex, bottom),
-                    ],
-                  ),
-                ),
+      width: bottom ? null : 120,
+      height: bottom ? 136 : null,
+      child: ListView.builder(
+        controller: bottom
+            ? _dockHorizontalController
+            : _dockVerticalController,
+        scrollDirection: bottom ? Axis.horizontal : Axis.vertical,
+        itemExtent: bottom ? 120 : 136,
+        itemBuilder: (context, index) {
+          final trackIndex = dockTracks[index % dockTracks.length];
+          return MouseRegion(
+            onEnter: (event) {
+              _dockTarget = event.localPosition;
+              if (_hoveredTrack != trackIndex) {
+                setState(() => _hoveredTrack = trackIndex);
+              }
+            },
+            onHover: (event) {
+              _dockTarget = event.localPosition;
+            },
+            onExit: (_) {
+              _dockTarget = const Offset(52, 56);
+              if (_hoveredTrack == trackIndex) {
+                setState(() => _hoveredTrack = null);
+              }
+            },
+            child: SizedBox(
+              height: 136,
+              width: 120,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _dockCard(trackIndex),
+                  const SizedBox(height: 5),
+                  _dockLabel(trackIndex, bottom),
+                ],
               ),
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -673,7 +709,7 @@ class _MusicPlayerState extends State<ActivityOnePage>
           initialData: _position,
           stream: _player.onPositionChanged,
           builder: (context, snapshot) {
-            final position = snapshot.data ?? Duration.zero;
+            final position = _seekPreview ?? snapshot.data ?? Duration.zero;
             final value = _duration.inMilliseconds == 0
                 ? 0.0
                 : (position.inMilliseconds / _duration.inMilliseconds).clamp(
@@ -684,16 +720,27 @@ class _MusicPlayerState extends State<ActivityOnePage>
               children: [
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    trackHeight: 3,
-                    thumbShape: SliderComponentShape.noThumb,
+                    trackHeight: 4,
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 7,
+                    ),
                     trackShape: const RectangularSliderTrackShape(),
-                    overlayShape: SliderComponentShape.noOverlay,
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 14,
+                    ),
                   ),
                   child: Slider(
                     value: value,
                     activeColor: Colors.white,
                     inactiveColor: Colors.white24,
-                    onChanged: _duration == Duration.zero ? null : _seek,
+                    onChanged: _duration == Duration.zero
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _seekPreview = _duration * value;
+                            });
+                          },
+                    onChangeEnd: _duration == Duration.zero ? null : _seek,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -727,7 +774,10 @@ class _MusicPlayerState extends State<ActivityOnePage>
                   _button(
                     Icons.shuffle,
                     'Shuffle',
-                    () => setState(() => _shuffle = !_shuffle),
+                    () => setState(() {
+                      _shuffle = !_shuffle;
+                      if (_shuffle) _resetShuffleOrder(_currentIndex);
+                    }),
                     active: _shuffle,
                   ),
                   _button(
@@ -941,16 +991,7 @@ class _MusicPlayerState extends State<ActivityOnePage>
                         child: ScrollConfiguration(
                           behavior: ScrollConfiguration.of(context)
                               .copyWith(scrollbars: false),
-                          child: compact
-                              ? SingleChildScrollView(
-                                  controller: _dockHorizontalController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: _dock(),
-                                )
-                              : SingleChildScrollView(
-                                  controller: _dockVerticalController,
-                                  child: _dock(),
-                                ),
+                          child: _dock(),
                         ),
                       ),
                     );
